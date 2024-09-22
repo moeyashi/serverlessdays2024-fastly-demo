@@ -20,7 +20,8 @@ async function handleRequest(event: FetchEvent) {
 
   if (
     !["GET", "POST"].includes(req.method) ||
-    !["JP"].includes(event.client.geo?.country_code || "")
+    !["JP"].includes(event.client.geo?.country_code || "") ||
+    !Device.lookup(event.request.headers.get("user-agent") || "")?.isDesktop
   ) {
     return new Response("This method is not allowed", {
       status: 405,
