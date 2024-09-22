@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+
+  function onShortenClick() {
+    const baseUrl = window.location.origin + "/";
+    let input_text = document.getElementById('input_text').value;
+    const matches = input_text.match(/\bhttps?:\/\/\S+/gi);
+    if (!matches) {
+      alert("there is no URL to shorten");
+      return;
+    }
+
+    const shortIdPromises = [];
+    for (const url of matches) {
+      if (url.length < 50) {
+        continue;
+      }
+
+      let reqBody = {};
+      reqBody["url"] = url;
+
+      let p = fetch(baseUrl, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify(reqBody),
+      });
+
+      shortIdPromises.push(p);
+    }
+
+    Promise.all(shortIdPromises).then(responses =>
+      Promise.all(responses.map(response => response.json()))
+    ).then(datas => {
+      // generate the output message
+      let i = 0;
+      for (const d of datas) {
+        input_text = input_text.replaceAll(matches[i], baseUrl + d.short);
+        i++;
+      }
+
+      document.getElementById('output_text').value = input_text;
+    }).catch(err =>
+      alert(err)
+    );
+
+    return;
+  }
+
+  function onCopyToClipboard() {
+    var copyText = document.getElementById("output_text");
+    navigator.clipboard
+      .writeText(copyText.value).
+      then(() => {
+        alert("Copied to clipboard");
+      })
+      .catch(() => {
+        alert("something went wrong");
+      });
+  }
+
+</script>
+
+<body class="mx-auto max-w-4xl px-2">
+  <div class="text-4xl font-bold text-center text-red-500 my-5">Fastly URL Shortener</div>
+
+  <p class="ms-auto text-lg text-gray-500 dark:text-gray-400 my-5">Enter your message below and click "Shorten URL" to
+    shorten any URLs over 50 characters.</p>
+  <div class="mb-20">
+    <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50">
+      <div class="px-4 py-2 bg-white rounded-t-lg ">
+        <textarea class="w-full px-0 text-sm text-gray-900 bg-white border-0" id="input_text" rows="10"
+          cols="100"></textarea>
+      </div>
+
+      <div class="flex items-left justify-between px-3 py-2 border-t">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onclick="onShortenClick()">Shorten URL</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="ms-auto text-lg text-gray-500 dark:text-gray-400 my-5">Message with URL shortened</p>
+  <div class="mb-20">
+    <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50">
+      <div class="px-4 py-2 bg-white rounded-t-lg ">
+        <textarea class="w-full px-0 text-sm text-gray-900 bg-white border-0" id="output_text" rows="10"
+          cols="100"></textarea>
+      </div>
+
+      <div class="flex items-left justify-between px-3 py-2 border-t">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onclick="onCopyToClipboard()">Copy To Clipboard</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

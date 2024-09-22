@@ -9,6 +9,16 @@ manifest_version = 3
 name = "serverlessdays2024-fastly-demo"
 service_id = ""
 
+[local_server]
+
+  [local_server.backends]
+
+  [local_server.kv_stores]
+
+    [[local_server.kv_stores.url-shortner-js]]
+      data = "https://example.com"
+      key = "example"
+
 [scripts]
   build = "npm run build"
   post_init = "npm install"
