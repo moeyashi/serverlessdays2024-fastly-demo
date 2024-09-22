@@ -18,7 +18,10 @@ async function handleRequest(event: FetchEvent) {
 
   let req = event.request;
 
-  if (!["GET", "POST"].includes(req.method)) {
+  if (
+    !["GET", "POST"].includes(req.method) ||
+    !["JP"].includes(event.client.geo?.country_code || "")
+  ) {
     return new Response("This method is not allowed", {
       status: 405,
     });
